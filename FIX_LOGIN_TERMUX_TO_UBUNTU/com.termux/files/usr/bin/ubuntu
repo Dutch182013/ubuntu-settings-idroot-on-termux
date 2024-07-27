@@ -1,0 +1,68 @@
+#!/data/data/com.termux/files/usr/bin/bash
+cd "$PREFIX/bin"
+SETPATH="/data/data/com.termux/files/home"
+echo 'vncserver-start' >> $SETPATH/ubuntu22-fs/root/.bash_history
+echo 'exec pulseaudio' > $SETPATH/.bash_history
+echo '
+  script-local:  /usr/local/bin
+  start-server:  vncserver-start
+'
+## unset LD_PRELOAD in case termux-exec is install
+## unset LD_PRELOAD
+unset LD_PRELOAD
+command+="/data/data/com.termux/files/usr/bin/proot"
+command+=" --kill-on-exit"
+command+=" --link2symlink"
+command+=" --root-id"
+command+=" -r $SETPATH/ubuntu22-fs"
+## addroot
+command+=" -b /storage"
+command+=" -b /system"
+command+=" -b /proc"
+##
+command+=" -b /data"
+command+=" -b /mnt"
+command+=" -b /dsp"
+command+=" -b /dev"
+command+=" -b /sys"
+## add-module fix
+command+=" -b /storage/emulated/0:/sdcard"
+command+=" -b /system/fonts:/usr/local/share/fonts"
+command+=" -b /system/etc/hosts:/etc/hosts"
+## add-defaul
+command+=" -b $SETPATH/ubuntu22-fs/root:/dev/shm"
+command+=" -b /proc/self/fd/2:/dev/stderr"
+command+=" -b /proc/self/fd/1:/dev/stdout"
+command+=" -b /proc/self/fd/0:/dev/stdin"
+command+=" -b /dev/urandom:/dev/random"
+command+=" -b /proc/self/fd:/dev/fd"
+######################################################################
+command+=" -b $SETPATH/ubuntu22-fs/proc/fakethings/stat:/proc/stat"
+command+=" -b $SETPATH/ubuntu22-fs/proc/fakethings/vmstat:/proc/vmstat"
+command+=" -b $SETPATH/ubuntu22-fs/proc/fakethings/version:/proc/version"
+######################################################################
+## command+=" -b /proc/stat:/proc/stat"
+## command+=" -b /proc/vmstat:/proc/vmstat"
+## command+=" -b /proc/version:/proc/version"
+######################################################################
+## uncomment the following line to have access to the home directory of termux
+## command+=" -b /data/data/com.termux:/termux"
+## add storang
+command+=" -w /root"
+command+=" /usr/bin/env -i"
+command+=" MOZ_FAKE_NO_SANDBOX=1"
+command+=" HOME=/root"
+## command+=" PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin"
+## command+=" PATH=/usr/local/sbin:/usr/local/bin:/bin:/usr/bin:/sbin:/usr/sbin:/usr/games:/usr/local/games"
+command+=" PATH=/usr/local/sbin:/usr/local/bin:/bin:/usr/bin:/sbin:/usr/sbin:/usr/games:/usr/local/games:/vendor/bin:/system/sbin:/system/bin:/system/xbin"
+command+=" TERM=$TERM"
+command+=" LANG=C.UTF-8"
+
+if [ "$1" ]; then
+    command+=" /usr/bin/bash --login"
+    $command -c "$@"
+else
+    command+=" sudo --login"
+    #>/dev/null 2>&1
+    $command
+fi

@@ -1,4 +1,4 @@
-#!/data/data/com.termux/files/usr/bin/bash
+#!/data/data/com.termux/files/usr/bin/sh
 
 if tty >/dev/null 2>&1 && [ $# = 0 ] && [ ! -f ~/.hushlogin ] && [ -z "$TERMUX_HUSHLOGIN" ]; then
 	# Use user defined dynamic motd file if it exists
@@ -48,32 +48,31 @@ if [ -f /data/data/com.termux/files/usr/etc/termux-login.sh ]; then
 	. /data/data/com.termux/files/usr/etc/termux-login.sh
 fi
 
-if [ "$PWD" = "$HOME" ]; then
-## run ubuntu login
-    echo 'cd $PREFIX' > $HOME/.bash_history
-    echo 'nano $PREFIX/etc/bash.bashrc' >> $HOME/.bash_history
-    echo 'nano $UBUNTU' >> $HOME/.bash_history
-    echo 'exec ubuntu' >> $HOME/.bash_history
-    if [ -n "$TERM" ]; then
-	    # exec "$SHELL" -l "$@"
-        if [ -f /data/data/com.termux/files/usr/bin/ubuntu ]; then
-            cd "$PREFIX/bin"
-            /data/data/com.termux/files/usr/bin/ubuntu
-            cd "$HOME"
-        fi
-    else
-	    exec "$SHELL" "$@"
+if [ "$@" ]; then
+	exec "$SHELL" -l "$@"
+fi
+
+if [ -n "$TERM"  ]; then
+    if [ "$PWD" = '/' ]; then
+    	cd "$HOME"
     fi
-elif [ "$PWD" = "$PREFIX/bin" ]; then
-## opensound ubuntu
-    if [ -n "$TERM" ]; then
-	    # exec "$SHELL" -l "$@"
-	    if [ -f /data/data/com.termux/files/usr/bin/pulseaudio ]; then
-        	cd "$HOME"
-        	/data/data/com.termux/files/usr/bin/pulseaudio
-        	exit "$?"
-    	fi
+    if [ "$PWD" = "$HOME" ]; then
+        exec "ubuntu"
+    elif [ "$PWD" = "$PREFIX/bin" ]; then
+        cd "$HOME"
+        echo '#-- Open Ubuntu Sound --#'
+        pulseaudio >/dev/null 2>&1
     else
-	    exec "$SHELL" "$@"
+        bash
+    fi
+else
+    if [ "$PWD" = "$HOME" ]; then
+        exec "ubuntu"
+    elif [ "$PWD" = "$PREFIX/bin" ]; then
+        cd "$HOME"
+        echo '#-- Open Ubuntu Sound --#'
+        pulseaudio >/dev/null 2>&1
+    else
+        bash
     fi
 fi
